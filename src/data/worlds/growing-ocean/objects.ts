@@ -12,5 +12,13 @@ export const oceanObjects: WorldObject[] = [
       displayName: "Coral",
       githubUsername: "coral-diver",
     },
+  }, 
+ {
+    id: "research-submarine",
+    asset: "/assets/worlds/growing-ocean/research-submarine.svg",
+    contributor: {
+      displayName: "OBagnell",
+      githubUsername: "OBagnell",
+    },
   },
 ];
