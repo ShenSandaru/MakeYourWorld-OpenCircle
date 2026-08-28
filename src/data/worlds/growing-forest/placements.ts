@@ -1,4 +1,4 @@
-oimport type { ObjectPlacement } from "@/schemas";
+import type { ObjectPlacement } from "@/schemas";
 
 /**
  * [CONTRIBUTOR ZONE - Commit 2]
@@ -8,8 +8,8 @@ export const forestPlacements: ObjectPlacement[] = [
   {
     objectId: "pine-tree",
     segmentId: "forest-01",
-    x: 20.0,
-    y: 60.0,
+    x: 22.0,
+    y: 65.0,
     scale: 1.1,
     rotation: -1,
   },
@@ -22,12 +22,11 @@ export const forestPlacements: ObjectPlacement[] = [
     rotation: 0,
   },
   {
-  objectId: "butterfly",
-  segmentId: "forest-01",
-  x: 40.0,
-  y: 50.0,
-  scale: 1.0,
-  rotation: 0,
-},
+    objectId: "butterfly",
+    segmentId: "forest-01",
+    x: 35.0, // Shifted slightly so it does not overlap the bird!
+    y: 45.0,
+    scale: 1.0,
+    rotation: 0,
+  },
 ];
-
