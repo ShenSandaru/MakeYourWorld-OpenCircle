@@ -20,8 +20,8 @@ export const forestObjects: WorldObject[] = [
       displayName: "Harsh",
       githubUsername: "Lazy-Pir8",
     },
-  }, // <-- Fixed: Properly closed the song-bird object here
-  {    // <-- Fixed: Started butterfly as a fresh, independent array item
+  },
+  {
     id: "butterfly",
     asset: "/assets/worlds/growing-forest/student-butterfly.svg",
     contributor: {
