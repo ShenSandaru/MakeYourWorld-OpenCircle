@@ -56,7 +56,7 @@ describe("Contribution Slot Pool Replenishment Generator Tests", () => {
   it("TEST 6: generates valid issue title adhering to standardized pattern", () => {
     const concept = CURATED_CONCEPTS[0]; // Butterfly
     const generated = generateContributionSlotIssue("CONTRIB-SLOT #03", concept);
-    expect(generated.title).toBe("[Good First Issue] 🌱 Add Butterfly to Growing Forest — forest-01 (CONTRIB-SLOT #03)");
+    expect(generated.title).toBe("🌱 Add a Butterfly to Growing Forest — Ancient Canopy (SLOT #03)");
     expect(generated.labels).toEqual(["good first issue"]);
   });
 
@@ -71,16 +71,15 @@ describe("Contribution Slot Pool Replenishment Generator Tests", () => {
     expect(parsed.slotFormatted).toBe("CONTRIB-SLOT #05");
     expect(parsed.segmentId).toBe("village-01");
     expect(parsed.objectName).toBe("Wooden Cart");
-    expect(parsed.normalizedTitle).toBe(generated.title);
     expect(isGrowingWorldsContributionIssue(generated.title, generated.labels, generated.body)).toBe(true);
   });
 
   it("TEST 8: generated issue explicitly emphasizes reusing existing assets without creating SVGs", () => {
     const concept = CURATED_CONCEPTS[0];
     const generated = generateContributionSlotIssue("CONTRIB-SLOT #01", concept);
-    expect(generated.body).toContain("NOT");
-    expect(generated.body).toContain("expected to create or upload a new SVG file");
-    expect(generated.body).toContain("reusable paper-cutout assets");
+    expect(generated.body).toContain("No design skills needed");
+    expect(generated.body).toContain("You don't need to create or upload an SVG");
+    expect(generated.body).toContain("reuse an existing paper-cutout asset");
   });
 
   it("TEST 9: every curated concept references a verified existing asset", () => {

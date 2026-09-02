@@ -480,7 +480,14 @@ export function generateContributionSlotIssue(
   overrideSegmentId?: string
 ): GeneratedSlotIssue {
   const segmentId = overrideSegmentId || concept.defaultSegmentId;
-  const title = `[Good First Issue] 🌱 Add ${concept.objectName} to ${concept.worldName} — ${segmentId} (${slotFormatted})`;
+  const slotNumMatch = slotFormatted.match(/(\d+)/);
+  const slotNumStr = slotNumMatch ? slotNumMatch[1].padStart(2, "0") : "01";
+  const objectSlug = concept.objectName
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  const title = `🌱 Add a ${concept.objectName} to ${concept.worldName} — ${concept.segmentName} (SLOT #${slotNumStr})`;
 
   const body = `### 🌍 Target World
 
@@ -512,231 +519,127 @@ Beginner (No prior open-source experience needed)
 
 ---
 
-# 🌱 Good First Issue — Add ${concept.objectName} to ${concept.worldName}
+# 🌱 Good First Issue: Add ${concept.objectName} to ${concept.worldName}
 
-> 👋 **Welcome!** This is a beginner-friendly contribution to Growing Worlds.
->
-> You do not need previous open-source experience. We will guide you through every step from claiming this issue to opening your Pull Request!
->
-> **Important**: You are **NOT** expected to create or upload a new SVG file. This repository already provides a rich collection of reusable paper-cutout assets! Your job is to select an existing asset, register **ONE** new object using that asset, and place the object in your assigned world segment.
+Welcome to **MakeYourWorld-OpenCircle**! This issue is designed specifically for first-time contributors. No prior open-source experience is required—just follow the step-by-step instructions below.
 
-- 🟢 **Difficulty**: Beginner
-- ⏱️ **Estimated Time**: 15–30 minutes
+> 💡 **No design skills needed:** You don't need to create or upload an SVG. You will reuse an existing paper-cutout asset and register its position in the world using TypeScript data files.
 
 ---
 
-## 🎯 Contribution Slot Summary
+### 📋 Assignment Summary
 
-| Detail | Your Assignment |
-| :--- | :--- |
-| **Target World** | \`${concept.worldName}\` (\`${concept.worldId}\`) |
-| **Contribution Slot** | \`${slotFormatted}\` |
-| **Assigned Segment** | \`${segmentId}\` (${concept.segmentName}) |
+| Detail | Value |
+| --- | --- |
+| **World** | \`${concept.worldName}\` |
+| **Segment ID** | \`${segmentId}\` |
 | **Object Name** | \`${concept.objectName}\` |
-| **Suggested Asset** | \`public/assets/worlds/${concept.worldId}/${concept.assetFile}\` |
-| **Feature Branch** | \`contrib/${concept.worldId}-${concept.objectName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}\` |
-| **PR Target Branch** | \`dev\` |
-| **Required Commits** | Minimum 2 (more allowed) |
+| **Asset Path** | \`/assets/worlds/${concept.worldId}/${concept.assetFile}\` |
+| **Branch Name** | \`contrib/${concept.worldId}-${objectSlug}\` |
+| **Base Branch** | \`dev\` |
+| **Estimated Time** | \`15–30 minutes\` |
 
 ---
 
-## 📝 Quick Instructions
+### 🛠️ Step-by-Step Guide
 
-1. ⭐ **Star our repo** on GitHub!
-2. 🍴 **Fork our repo** and clone it locally.
-3. 🙋 **Claim this issue**: Comment \`Hi! I'd like to work on this issue. Thank you! 🙌\` below.
-4. 🌿 **Create your branch**: \`git checkout -b contrib/${concept.worldId}-${concept.objectName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}\` from \`dev\`.
-5. 🎨 **Commit 1**: Open \`src/data/worlds/${concept.worldId}/objects.ts\`, reference an existing reusable asset from \`public/assets/worlds/${concept.worldId}/\`, and register your object.
-6. 📍 **Commit 2**: Open \`src/data/worlds/${concept.worldId}/placements.ts\` and add placement with \`segmentId: "${segmentId}"\`.
-7. 🧪 **Run checks**: \`npm test && npm run lint && npm run typecheck && npm run build && npx tsx scripts/audit-integrity.ts\`.
-8. 🚀 **Submit PR**: Open a Pull Request targeting \`dev\` with \`Closes #<THIS_ISSUE_NUMBER>\` in the description.
-9. 👀 **Wait for review & merge!**
+#### 1. Claim the Issue
 
----
+Leave a comment below to reserve this slot:
 
-## 🎨 Important Distinction: Object vs. Asset
-
-- **Asset (SVG)**: A reusable visual picture file stored in \`public/assets/worlds/${concept.worldId}/\`. Think of it as the physical paper stamp.
-- **Object**: A data record in \`objects.ts\` that defines *who* made the contribution and *which* visual asset it uses.
-- **Placement**: A record in \`placements.ts\` that defines *where* (coordinates and segment) the object sits in the world.
-
-> 💡 *You do NOT need to create a new SVG file. You reuse an existing asset from the repository.*
-
----
-
-## 🎯 What You Are Building
-
-Your contribution adds **ONE** new visual paper-cutout object to the selected Growing World!
-- Once merged into \`dev\`, your paper craft becomes a permanent visual part of the shared interactive diorama.
-- Your GitHub username and contributor display name will be displayed in an elegant paper pin badge right beneath your object.
-
----
-
-## 📝 Your Task
-
-1. **Inspect existing reusable assets** in \`public/assets/worlds/${concept.worldId}/\`.
-2. **Register ONE new object** in \`src/data/worlds/${concept.worldId}/objects.ts\` referencing that asset.
-3. **Place that object** in the assigned segment using \`src/data/worlds/${concept.worldId}/placements.ts\`.
-4. **Follow the flexible two-stage commit workflow** (minimum 2 commits, more allowed).
-5. **Open a Pull Request** targeting the \`dev\` branch.
-
-> ⚠️ **Important Scope Boundary**: You are modifying data files for **ONE** world only (\`objects.ts\` and \`placements.ts\`). Do NOT modify existing SVG assets, unrelated worlds, governance files, CI workflows, or project configuration.
-
----
-
-## ✅ Before You Start
-
-- [ ] Read this entire issue once from top to bottom.
-- [ ] Make sure the issue is formally assigned to you before writing code.
-- [ ] Verify your assigned World and Segment ID.
-- [ ] Check the existing assets under \`public/assets/worlds/${concept.worldId}/\`.
-- [ ] Remember: PRs require a **minimum of 2 commits** (more commits are completely fine!).
-- [ ] Remember: PRs always target the **\`dev\`** branch (never \`main\`).
-
----
-
-## 🙋 Step 1 — Claim the Issue
-
-To claim this slot, comment below:
 \`\`\`text
 Hi! I'd like to work on this issue. Thank you! 🙌
 \`\`\`
-A maintainer will formally assign you to the issue. Once assigned, GitHub Actions will automatically post a personalized onboarding comment with your exact branch name and assignment details. You have a **48-hour reservation window** to submit your PR.
+
+> Wait until a maintainer assigns you before moving forward. Slots are held for **48 hours**.
 
 ---
 
-## 🍴 Step 2 — Fork and Clone
+#### 2. Set Up Your Repository
 
-1. Click **Fork** in the top right corner of this repository on GitHub.
-2. Clone your newly created fork to your computer:
-   \`\`\`bash
-   git clone https://github.com/<your-github-username>/MakeYourWorld-OpenCircle.git
-   cd MakeYourWorld-OpenCircle
-   \`\`\`
-3. Connect to the upstream repository:
-   \`\`\`bash
-   git remote add upstream https://github.com/ShenSandaru/MakeYourWorld-OpenCircle.git
-   \`\`\`
+Fork the repository on GitHub, then clone your fork and sync it with upstream:
 
----
-
-## 🌿 Step 3 — Create Your Student Feature Branch
-
-Always start fresh from the latest upstream **\`dev\`** branch:
 \`\`\`bash
+# Clone your fork
+git clone https://github.com/<your-github-username>/MakeYourWorld-OpenCircle.git
+cd MakeYourWorld-OpenCircle
+
+# Add upstream remote to stay up to date
+git remote add upstream https://github.com/ShenSandaru/MakeYourWorld-OpenCircle.git
+
+# Pull the latest dev branch
 git checkout dev
 git fetch upstream
 git pull upstream dev
-\`\`\`
 
-Create and switch to your feature branch using the required \`contrib/\` prefix:
-\`\`\`bash
-git checkout -b contrib/${concept.worldId}-${concept.objectName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}
-\`\`\`
+# Create your feature branch
+git checkout -b contrib/${concept.worldId}-${objectSlug}
 
----
-
-## 📦 Step 4 — Install Dependencies
-
-\`\`\`bash
+# Install dependencies
 npm install
 \`\`\`
 
 ---
 
-## 📁 Files You Will Change
+#### 3. Register the Object (Commit 1)
 
-Your contribution will normally modify **only these two files**:
-\`\`\`text
-Commit 1 (Object Registration):
-└── src/data/worlds/${concept.worldId}/objects.ts              (Object metadata & contributor attribution)
+Open \`src/data/worlds/${concept.worldId}/objects.ts\` and add your object entry at the end of the array:
 
-Commit 2 (World Placement):
-└── src/data/worlds/${concept.worldId}/placements.ts           (Coordinates & segment placement)
+\`\`\`typescript
+{
+  id: "${objectSlug}",
+  asset: "/assets/worlds/${concept.worldId}/${concept.assetFile}",
+  contributor: {
+    displayName: "<Your Name>",
+    githubUsername: "<your-github-username>",
+  },
+},
 \`\`\`
-*(Existing SVG assets in \`public/assets/worlds/${concept.worldId}/\` are read-only and should NOT be modified).*
 
----
+Stage and commit this change:
 
-# 🔐 Two-Stage Contribution Governance
-
-- **Minimum 2 commits required** (Commit 1: Object registration in \`objects.ts\`, Commit 2: Placement in \`placements.ts\`).
-- **Flexible commit count**: If you make 3, 4, or 5 commits (for fixes or adjustments), that is **100% fine and allowed**! You do not need to squash them.
-- **Strict file scope**: Only modify \`objects.ts\` and \`placements.ts\` for your assigned world.
-
----
-
-## 🎨 Step 5 — Commit 1: Register Object with Existing Asset
-
-1. **Select an Existing Asset**:
-   - Open \`public/assets/worlds/${concept.worldId}/\` in your file explorer or GitHub.
-   - Choose an existing paper cutout SVG (e.g. \`/assets/worlds/${concept.worldId}/${concept.assetFile}\`).
-
-2. **Register in \`objects.ts\`**:
-   - Open \`src/data/worlds/${concept.worldId}/objects.ts\` and append your object definition:
-     \`\`\`typescript
-     {
-       id: "${concept.objectName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}",
-       asset: "/assets/worlds/${concept.worldId}/${concept.assetFile}",
-       contributor: {
-         displayName: "<Your Display Name>",
-         githubUsername: "<your-github-username>",
-       },
-     },
-     \`\`\`
-
-3. **Check Changes & Create Commit 1**:
-   \`\`\`bash
-   git status
-   git diff
-   git add src/data/worlds/${concept.worldId}/objects.ts
-   git commit -m "feat: register ${concept.objectName.toLowerCase()} object"
-   \`\`\`
-
----
-
-## 📍 Step 6 — Commit 2: Place Your Object in the Segment
-
-1. Open \`src/data/worlds/${concept.worldId}/placements.ts\`.
-2. Append your placement entry referencing your registered \`id\` and assigned \`segmentId\`:
-   \`\`\`typescript
-   {
-     objectId: "${concept.objectName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}",
-     segmentId: "${segmentId}",
-     x: 45.0,
-     y: 55.0,
-     scale: 1.0,
-     rotation: 0,
-   },
-   \`\`\`
-   *(Coordinates \`x\` and \`y\` are normalized percentages \`0.0\` to \`100.0\`)*
-
-3. **Check Changes & Create Commit 2**:
-   \`\`\`bash
-   git status
-   git diff
-   git add src/data/worlds/${concept.worldId}/placements.ts
-   git commit -m "feat: place ${concept.objectName.toLowerCase()} in ${segmentId}"
-   \`\`\`
-
----
-
-## 🔍 Step 7 — Verify Your Commits & Modified Files
-
-Check your Git commit history:
 \`\`\`bash
-git log --oneline -5
-\`\`\`
-Check your modified files (should only be \`objects.ts\` and \`placements.ts\`):
-\`\`\`bash
-git diff --name-only origin/dev
+git add src/data/worlds/${concept.worldId}/objects.ts
+git commit -m "feat: register ${objectSlug} object"
 \`\`\`
 
 ---
 
-## 🧪 Step 8 — Run Local Quality Gates
+#### 4. Place the Object in the World (Commit 2)
 
-Run all validation checks locally to ensure zero errors:
+Open \`src/data/worlds/${concept.worldId}/placements.ts\` and append your placement coordinates (\`x\` and \`y\` are percentages from \`0.0\` to \`100.0\`):
+
+\`\`\`typescript
+{
+  objectId: "${objectSlug}",
+  segmentId: "${segmentId}",
+  x: 45.0,
+  y: 55.0,
+  scale: 1.0,
+  rotation: 0,
+},
+\`\`\`
+
+Stage and commit this change:
+
+\`\`\`bash
+git add src/data/worlds/${concept.worldId}/placements.ts
+git commit -m "feat: place ${objectSlug} in ${segmentId}"
+\`\`\`
+
+---
+
+#### 5. Verify & Test Locally
+
+**Inspect your changes:**
+Ensure only the expected data files were modified:
+
+\`\`\`bash
+git diff --name-only dev
+\`\`\`
+
+**Run local validation:**
+
 \`\`\`bash
 npm test
 npm run lint
@@ -745,44 +648,33 @@ npm run build
 npx tsx scripts/audit-integrity.ts
 \`\`\`
 
----
+**Preview in browser:**
 
-## 🖥️ Step 9 — Visual Verification in Your Browser
-
-Start the local Next.js development server:
 \`\`\`bash
 npm run dev
 \`\`\`
-Open \`http://localhost:3000/worlds/${concept.worldId}\` in your browser:
-- Verify that your object renders in its assigned segment.
-- Verify that your contributor badge displays your display name.
-- Verify that existing objects remain intact.
+
+Open \`http://localhost:3000/worlds/${concept.worldId}\` to verify your object appears in the correct segment and displays your contributor badge correctly.
 
 ---
 
-## 🚀 Step 10 — Push and Open Pull Request
+#### 6. Submit Your Pull Request
 
-1. Push your branch to your fork:
-   \`\`\`bash
-   git push -u origin contrib/${concept.worldId}-${concept.objectName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}
-   \`\`\`
-2. Open a Pull Request on GitHub:
-   - **Base branch**: \`dev\` *(⚠️ Do NOT target \`main\`)*
-   - **Compare branch**: \`contrib/${concept.worldId}-${concept.objectName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}\`
-3. In the PR description, connect this issue so it automatically closes upon merge:
-   \`\`\`markdown
-   ## 🔗 Linked Issue
-   Closes #<THIS_ISSUE_NUMBER>
-   \`\`\`
+Push your branch:
 
----
+\`\`\`bash
+git push -u origin contrib/${concept.worldId}-${objectSlug}
+\`\`\`
 
-## 🎉 Step 11 — What Happens After Submitting
+1. Go to your fork on GitHub and click **Compare & pull request**.
+2. **Base branch:** Set to \`dev\` *(do not target \`main\`)*.
+3. In the description, include:
 
-1. **Automated CI Validation**: GitHub Actions will automatically test your commits, verify strict file boundaries, run ESLint/typecheck/build, and confirm relational schema integrity.
-2. **Maintainer Review**: A maintainer will review your placement and approve the PR.
-3. **Merge & Automatic Closure**: Once merged into \`dev\`, GitHub automatically closes this issue slot and awards your permanent spot in the diorama!
-4. **Need Help?**: If you get stuck or have questions at any step, feel free to comment right here on this issue!`;
+\`\`\`markdown
+Closes #<THIS_ISSUE_NUMBER>
+\`\`\`
+
+4. Submit the PR. CI checks will run automatically, and a maintainer will review your placement shortly!`;
 
   return {
     slotFormatted,
