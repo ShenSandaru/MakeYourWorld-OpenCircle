@@ -106,7 +106,7 @@ jobs:
               if (slotMatch) {
                 activeSlots.push(`CONTRIB-SLOT #${slotMatch[1].padStart(2, '0')}`);
               }
-              // Extract world and object
+              // Extract world and object (supports both "🌱 Add..." and "[Good First Issue] 🌱 Add...")
               const titleMatch = issue.title.match(/Add (.*?) to (.*?) —/i);
               if (titleMatch) {
                 activeAssignments.push({
