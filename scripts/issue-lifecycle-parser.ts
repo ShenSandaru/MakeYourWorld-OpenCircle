@@ -33,10 +33,43 @@ export interface ParseResult {
 export function extractIssueFormField(body: string, keywords: string[]): string | null {
   if (!body) return null;
 
+  // 1. Table row style markdown (e.g. "| **World** | `Growing Forest` |")
   for (const keyword of keywords) {
-    // Matches heading lines containing the keyword, followed by the content until the next heading or separator
+    const tableRegex = new RegExp(
+      "(?:^|\\n)\\|\\s*\\*\\*[^\\r\\n]*?" +
+        escapeRegex(keyword) +
+        "[^\\r\\n]*?\\*\\*\\s*\\|\\s*(?:`?)([^`\\r\\n|]+?)(?:`?)\\s*\\|",
+      "i"
+    );
+    const match = body.match(tableRegex);
+    if (match && match[1]) {
+      const val = match[1].trim();
+      if (val && val !== "_No response_" && val !== "No response") {
+        return val;
+      }
+    }
+  }
+
+  // 2. Fallback for list style / key-value style markdown (e.g. "- **Target World**: Growing Forest")
+  for (const keyword of keywords) {
+    const listRegex = new RegExp(
+      `(?:^|\\n)[-*]\\s*\\*\\*[^\\r\\n]*?${escapeRegex(keyword)}[^\\r\\n]*?\\*\\*:\\s*` +
+        `(?:\\[e\\.g\\.,?\\s*)?([^\\]\\r\\n]+?)(?:\\])?(?=[\\r\\n]|$)`,
+      "i"
+    );
+    const match = body.match(listRegex);
+    if (match && match[1]) {
+      const val = match[1].trim();
+      if (val && val !== "_No response_" && val !== "No response") {
+        return val;
+      }
+    }
+  }
+
+  // 3. Heading lines (e.g. "### 🌍 Target World\n\nGrowing Forest (growing-forest)")
+  for (const keyword of keywords) {
     const regex = new RegExp(
-      `(?:^|\\n)#{1,4}\\s*[^\\r\\n]*?${escapeRegex(keyword)}[^\\r\\n]*[\\r\\n]+([\\s\\S]*?)(?=(?:\\n#{1,4}\\s+|\\n---|\\n\\*\\*|$))`,
+      `(?:^|\\n)#{1,4}\\s*(?:[^\\r\\n]*?\\s)?${escapeRegex(keyword)}(?:\\s[^\\r\\n]*?)?[\\r\\n]+([\\s\\S]*?)(?=(?:\\n#{1,4}\\s+|\\n---|\\n\\*\\*|$))`,
       "i"
     );
     const match = body.match(regex);
@@ -51,22 +84,6 @@ export function extractIssueFormField(body: string, keywords: string[]): string 
         if (firstLine !== "_No response_" && firstLine !== "No response" && firstLine !== "None") {
           return firstLine;
         }
-      }
-    }
-  }
-
-  // Fallback for list style / key-value style markdown (e.g. "- **Target World**: Growing Forest")
-  for (const keyword of keywords) {
-    const listRegex = new RegExp(
-      `(?:^|\\n)[-*]\\s*\\*\\*[^\\r\\n]*?${escapeRegex(keyword)}[^\\r\\n]*?\\*\\*:\\s*` +
-        `(?:\\[e\\.g\\.,?\\s*)?([^\\]\\r\\n]+?)(?:\\])?(?=[\\r\\n]|$)`,
-      "i"
-    );
-    const match = body.match(listRegex);
-    if (match && match[1]) {
-      const val = match[1].trim();
-      if (val && val !== "_No response_" && val !== "No response") {
-        return val;
       }
     }
   }
@@ -101,8 +118,8 @@ export function isGrowingWorldsContributionIssue(
  * Does NOT use artificial defaults if required fields are missing.
  */
 export function parseIssueSlotBody(body: string): ParsedIssueSlot {
-  const rawWorld = extractIssueFormField(body, ["Target World", "world"]);
-  const rawSlot = extractIssueFormField(body, [
+  const rawWorld = extractIssueFormField(body, ["Target World", "World", "world"]);
+  let rawSlot = extractIssueFormField(body, [
     "Contribution Slot Identifier",
     "Contribution Slot",
     "slot_id",
@@ -111,6 +128,7 @@ export function parseIssueSlotBody(body: string): ParsedIssueSlot {
   const rawSegment = extractIssueFormField(body, [
     "Assigned World Segment ID",
     "Assigned World Segment",
+    "Segment ID",
     "target_segment",
     "segment",
   ]);
@@ -123,6 +141,7 @@ export function parseIssueSlotBody(body: string): ParsedIssueSlot {
   const rawCustomObject = extractIssueFormField(body, [
     "Custom Object Name",
     "custom_object_name",
+    "Object Name",
   ]);
 
   // 1. World Parsing
@@ -135,6 +154,9 @@ export function parseIssueSlotBody(body: string): ParsedIssueSlot {
       worldId = idMatch[1].toLowerCase();
     }
     worldName = rawWorld.replace(/\s*\([^)]*\)/, "").trim();
+    if (!worldId && worldName) {
+      worldId = worldName.toLowerCase().replace(/\s+/g, "-");
+    }
   }
 
   // 2. Slot Parsing
@@ -143,6 +165,13 @@ export function parseIssueSlotBody(body: string): ParsedIssueSlot {
     const numMatch = rawSlot.match(/(\d+)/);
     if (numMatch) {
       slotFormatted = `CONTRIB-SLOT #${numMatch[1].padStart(2, "0")}`;
+    }
+  } else {
+    // Fallback search for (SLOT #XX) or CONTRIB-SLOT #XX in body
+    const slotTextMatch = body.match(/(?:CONTRIB-SLOT|SLOT)\s*#?(\d+)/i);
+    if (slotTextMatch) {
+      slotFormatted = `CONTRIB-SLOT #${slotTextMatch[1].padStart(2, "0")}`;
+      rawSlot = slotFormatted;
     }
   }
 
