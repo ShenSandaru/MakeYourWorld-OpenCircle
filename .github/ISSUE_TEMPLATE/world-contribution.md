@@ -1,7 +1,7 @@
 ---
 name: "🌿 Reusable World Contribution Slot (Good First Issue)"
 about: "Reusable contribution slot for adding a paper-collage object into a Growing World segment"
-title: "[Good First Issue] 🌱 Add a <Object Name> to <World Name> — <Segment Name> (CONTRIB-SLOT #<01-20>)"
+title: "🌱 Add a <Object Name> to <World Name> at <Segment Name> (SLOT #<01-20>)"
 labels: ["good first issue"]
 assignees: ""
 ---
