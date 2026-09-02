@@ -489,37 +489,7 @@ export function generateContributionSlotIssue(
 
   const title = `🌱 Add a ${concept.objectName} to ${concept.worldName} — ${concept.segmentName} (SLOT #${slotNumStr})`;
 
-  const body = `### 🌍 Target World
-
-${concept.worldName} (${concept.worldId})
-
-### 🏷️ Contribution Slot Identifier
-
-${slotFormatted}
-
-### 📍 Assigned World Segment ID
-
-${segmentId} (${concept.segmentName})
-
-### 🎨 Suggested Object Category & Concept
-
-${concept.categoryLabel}
-
-### ✏️ Custom Object Name (Optional)
-
-_No response_
-
-### 📊 Difficulty Level
-
-Beginner (No prior open-source experience needed)
-
-### ⏱️ Estimated Time
-
-15–30 minutes
-
----
-
-# 🌱 Good First Issue: Add ${concept.objectName} to ${concept.worldName}
+  const body = `# 🌱 Good First Issue: Add ${concept.objectName} to ${concept.worldName}
 
 Welcome to **MakeYourWorld-OpenCircle**! This issue is designed specifically for first-time contributors. No prior open-source experience is required—just follow the step-by-step instructions below.
 
@@ -532,6 +502,7 @@ Welcome to **MakeYourWorld-OpenCircle**! This issue is designed specifically for
 | Detail | Value |
 | --- | --- |
 | **World** | \`${concept.worldName}\` |
+| **Contribution Slot** | \`${slotFormatted}\` |
 | **Segment ID** | \`${segmentId}\` |
 | **Object Name** | \`${concept.objectName}\` |
 | **Asset Path** | \`/assets/worlds/${concept.worldId}/${concept.assetFile}\` |
