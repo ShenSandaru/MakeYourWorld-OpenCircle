@@ -21,4 +21,12 @@ export const forestPlacements: ObjectPlacement[] = [
     scale: 1.0,
     rotation: 0,
   },
+  {
+  objectId: "butterfly",
+  segmentId: "forest-01",
+  x: 70.0,
+  y: 35.0,
+  scale: 1.0,
+  rotation: 0,
+},
 ];
