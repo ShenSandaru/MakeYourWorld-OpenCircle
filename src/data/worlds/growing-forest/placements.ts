@@ -21,4 +21,12 @@ export const forestPlacements: ObjectPlacement[] = [
     scale: 1.0,
     rotation: 0,
   },
+  {
+  objectId: "mossy-rock",
+  segmentId: "forest-02",
+  x: 45.0,
+  y: 55.0,
+  scale: 1.0,
+  rotation: 0,
+},
 ];
