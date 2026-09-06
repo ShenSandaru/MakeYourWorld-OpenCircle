@@ -21,4 +21,12 @@ export const forestObjects: WorldObject[] = [
       githubUsername: "Lazy-Pir8",
     },
   },
+  {
+  id: "mossy-rock",
+  asset: "/assets/worlds/growing-forest/mossy-rock.svg",
+  contributor: {
+    displayName: "<Your Name>",
+    githubUsername: "<your-github-username>",
+  },
+},
 ];
