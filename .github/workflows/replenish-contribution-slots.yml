@@ -4,6 +4,9 @@ on:
   issues:
     types:
       - closed
+  schedule:
+    # Periodic health check every 6 hours to reconcile pool after manual issue deletions
+    - cron: "0 */6 * * *"
   workflow_dispatch:
     inputs:
       dry_run:
@@ -48,7 +51,7 @@ jobs:
             const { execSync } = require('child_process');
 
             const eventName = context.eventName;
-            const action = context.payload.action || 'dispatched';
+            const action = context.payload.action || 'scheduled_or_dispatched';
             const closedIssue = context.payload.issue;
             const isDryRun = process.env.DRY_RUN === 'true';
 
@@ -71,28 +74,30 @@ jobs:
 
               if (!isContributionIssue) {
                 console.log(`Closed issue #${closedIssue.number} ("${closedIssue.title}") is NOT a contribution slot issue.`);
-                console.log("Replenishment skipped.");
+                console.log("Replenishment skipped for unrelated closed issue.");
                 return;
               }
 
               console.log(`Contribution issue #${closedIssue.number} closed: "${closedIssue.title}". Proceeding to replenish pool.`);
             }
 
-            // 1. Fetch all currently OPEN issues
-            console.log("Fetching currently open issues from repository...");
-            const openIssuesRes = await github.rest.issues.listForRepo({
+            // 1. Fetch all currently OPEN issues with pagination support
+            console.log("Fetching currently open issues from repository using pagination...");
+            const openIssues = await github.paginate(github.rest.issues.listForRepo, {
               owner: context.repo.owner,
               repo: context.repo.repo,
               state: "open",
               per_page: 100,
             });
 
-            // Filter open issues that are contribution slot issues
-            const openContribIssues = openIssuesRes.data.filter(issue => {
-              const labels = issue.labels.map(l => typeof l === 'string' ? l : l.name);
+            // Filter open issues that are authentic Growing Worlds contribution slot issues (exclude PRs)
+            const openContribIssues = openIssues.filter(issue => {
+              if (issue.pull_request) return false;
+              const labels = (issue.labels || []).map(l => typeof l === 'string' ? l : l.name);
               const isGoodFirstIssue = labels.includes("good first issue");
-              const hasContribTitle = issue.title && (issue.title.includes("[Good First Issue]") || issue.title.includes("CONTRIB-SLOT"));
-              return isGoodFirstIssue || hasContribTitle;
+              const hasContribTitle = issue.title && (issue.title.includes("[Good First Issue]") || issue.title.includes("CONTRIB-SLOT") || issue.title.includes("🌱 Add"));
+              const hasWorldBody = issue.body && (issue.body.includes("Target World") || issue.body.includes("Contribution Slot") || issue.body.includes("Assignment Summary"));
+              return isGoodFirstIssue || hasContribTitle || hasWorldBody;
             });
 
             console.log(`Found ${openContribIssues.length} active open contribution slot issue(s).\n`);
@@ -122,10 +127,11 @@ jobs:
             const inputPath = path.join(process.cwd(), '.replenish-input.json');
             const outputPath = path.join(process.cwd(), '.replenish-output.json');
 
+            // maxPerRun: 20 allows fully reconciling deficits up to the full 20-slot pool in a single run
             fs.writeFileSync(inputPath, JSON.stringify({
               activeSlots,
               activeAssignments,
-              maxPerRun: 5,
+              maxPerRun: 20,
             }, null, 2), 'utf-8');
 
             console.log(`Invoking TypeScript replenishment computation script...`);
@@ -146,6 +152,10 @@ jobs:
             }
 
             let createdCount = 0;
+            let skippedCount = 0;
+            let failedCount = 0;
+
+            const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
             for (const generated of result.generatedIssues) {
               console.log("-------------------------------------------------");
@@ -155,27 +165,39 @@ jobs:
               console.log(`Proposed Title:  ${generated.title}`);
 
               if (isDryRun) {
-                console.log("ℹ️ [DRY RUN ENABLED] No issues created.");
+                console.log("ℹ️ [DRY RUN ENABLED] No issue created.");
+                skippedCount++;
               } else {
                 console.log(`Creating new contribution issue for ${generated.slotFormatted}...`);
-                const createdIssue = await github.rest.issues.create({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  title: generated.title,
-                  body: generated.body,
-                  labels: generated.labels,
-                });
-                console.log(`✅ Created Issue #${createdIssue.data.number}: ${createdIssue.data.html_url}`);
-                createdCount++;
+                try {
+                  const createdIssue = await github.rest.issues.create({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    title: generated.title,
+                    body: generated.body,
+                    labels: generated.labels,
+                  });
+                  console.log(`✅ Created Issue #${createdIssue.data.number}: ${createdIssue.data.html_url}`);
+                  createdCount++;
+                  // Small throttle delay between creations to prevent secondary rate-limiting
+                  await sleep(1000);
+                } catch (err) {
+                  console.error(`❌ Failed to create issue for ${generated.slotFormatted}:`, err.message || err);
+                  failedCount++;
+                }
               }
             }
 
             console.log("\n=================================================");
             console.log(`Pool Replenishment Summary:`);
-            console.log(`  Target Pool:     ${result.targetPoolSize}`);
-            console.log(`  Previously Open: ${result.openContributionCount}`);
-            console.log(`  Created:         ${createdCount}`);
-            console.log(`  Total Active:    ${result.openContributionCount + createdCount} / ${result.targetPoolSize}`);
+            console.log(`  Target Pool:                     ${result.targetPoolSize}`);
+            console.log(`  Current Open Contribution Slots: ${result.openContributionCount}`);
+            console.log(`  Missing Slots:                   ${result.missingSlotCount}`);
+            console.log(`  Slots To Create:                 ${result.slotsToCreate.length}`);
+            console.log(`  Created:                         ${createdCount}`);
+            console.log(`  Skipped:                         ${skippedCount}`);
+            console.log(`  Failed:                          ${failedCount}`);
+            console.log(`  Final Open Contribution Pool:    ${result.openContributionCount + createdCount} / ${result.targetPoolSize}`);
             console.log("=================================================");
 
             // Cleanup temp files

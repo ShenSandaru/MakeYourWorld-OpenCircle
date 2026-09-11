@@ -22,7 +22,7 @@ export interface ReplenishOutput {
 }
 
 export function computeReplenishment(input: ReplenishInput): ReplenishOutput {
-  const maxPerRun = input.maxPerRun ?? 5;
+  const maxPerRun = input.maxPerRun ?? TOTAL_POOL_SIZE;
   const missingSlots = calculateMissingSlotIds(input.activeSlots);
   const slotsToCreate = missingSlots.slice(0, maxPerRun);
 
