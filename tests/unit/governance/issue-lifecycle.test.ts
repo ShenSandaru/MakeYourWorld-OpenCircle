@@ -6,6 +6,8 @@ import {
   isGrowingWorldsContributionIssue,
   buildOnboardingComment,
   buildCompletionComment,
+  isClaimComment,
+  buildAlreadyClaimedComment,
 } from "../../../scripts/issue-lifecycle-parser";
 
 describe("GitHub Issue Lifecycle Parser & Normalizer Unit Tests", () => {
@@ -172,4 +174,75 @@ Add ONE paper-cutout object to Growing Forest inside forest-01.
       )
     ).toBe(true);
   });
+
+  describe("Automatic Issue Claiming Helper Tests", () => {
+    it("TEST 15: Exact canonical claim with emoji triggers claim", () => {
+      expect(isClaimComment("Hi! I'd like to work on this issue. Thank you! 🙌")).toBe(true);
+    });
+
+    it("TEST 16: Claim without emoji triggers claim", () => {
+      expect(isClaimComment("Hi! I'd like to work on this issue. Thank you!")).toBe(true);
+    });
+
+    it("TEST 17: Claim with different capitalization triggers claim", () => {
+      expect(isClaimComment("hi! i'd like to work on this issue. thank you! 🙌")).toBe(true);
+      expect(isClaimComment("HI! I'D LIKE TO WORK ON THIS ISSUE. THANK YOU! 🙌")).toBe(true);
+      expect(isClaimComment("Hi! I'D like to work on this issue. THANK YOU!")).toBe(true);
+    });
+
+    it("TEST 18: Claim with extra leading, trailing, and internal whitespace triggers claim", () => {
+      expect(isClaimComment("   Hi!  I'd   like to work on this issue.   Thank you! 🙌  \n")).toBe(true);
+      expect(isClaimComment("\n\tHi! I'd like to work on this issue. Thank you!\n")).toBe(true);
+    });
+
+    it("TEST 19: Claim with curly/smart apostrophe (’ or ‘) triggers claim", () => {
+      expect(isClaimComment("Hi! I’d like to work on this issue. Thank you! 🙌")).toBe(true);
+      expect(isClaimComment("Hi! I‘d like to work on this issue. Thank you!")).toBe(true);
+    });
+
+    it("TEST 20: Random or arbitrary comments do NOT trigger claim", () => {
+      expect(isClaimComment("Can I please work on this?")).toBe(false);
+      expect(isClaimComment("Hello world")).toBe(false);
+      expect(isClaimComment("I would like to work on this issue")).toBe(false);
+      expect(isClaimComment("Hi! I'd like to work on this issue.")).toBe(false);
+      expect(isClaimComment("")).toBe(false);
+      expect(isClaimComment(null)).toBe(false);
+      expect(isClaimComment(undefined)).toBe(false);
+    });
+
+    it("TEST 21: Non-contribution issues are correctly identified as non-claimable", () => {
+      const isContrib = isGrowingWorldsContributionIssue(
+        "Bug: App crash on startup",
+        ["bug"],
+        "Error in main.tsx"
+      );
+      expect(isContrib).toBe(false);
+    });
+
+    it("TEST 22: Unassigned contribution issues qualify for claim processing", () => {
+      const isContrib = isGrowingWorldsContributionIssue(
+        "[Good First Issue] 🌱 Add Butterfly to Growing Forest — forest-01 (CONTRIB-SLOT #01)",
+        ["good first issue"],
+        sampleIssueFormBody
+      );
+      expect(isContrib).toBe(true);
+    });
+
+    it("TEST 23: Already-assigned issue generates polite rejection comment referencing current assignee", () => {
+      const comment = buildAlreadyClaimedComment(51, "student-dev-2", "OBagnell");
+      expect(comment).toContain("<!-- growing-worlds:claim-rejected:51:student-dev-2 -->");
+      expect(comment).toContain("@student-dev-2");
+      expect(comment).toContain("**@OBagnell**");
+      expect(comment).toContain("Please choose another unassigned contribution slot.");
+    });
+
+    it("TEST 24: Rejection comment marker is unique per issue and commenter to prevent duplicate rejections", () => {
+      const comment1 = buildAlreadyClaimedComment(51, "student-dev-2", "OBagnell");
+      const comment2 = buildAlreadyClaimedComment(51, "student-dev-3", "OBagnell");
+      expect(comment1).toContain("<!-- growing-worlds:claim-rejected:51:student-dev-2 -->");
+      expect(comment2).toContain("<!-- growing-worlds:claim-rejected:51:student-dev-3 -->");
+      expect(comment1).not.toBe(comment2);
+    });
+  });
 });
+

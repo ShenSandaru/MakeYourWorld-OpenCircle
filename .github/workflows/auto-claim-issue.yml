@@ -1,0 +1,164 @@
+name: Auto-Claim Contribution Issue Slot
+
+on:
+  issue_comment:
+    types:
+      - created
+
+concurrency:
+  group: issue-claim-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  auto-claim:
+    name: Validate and Auto-Assign Contributor
+    runs-on: ubuntu-latest
+    steps:
+      - name: Process Issue Claim Comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const comment = context.payload.comment;
+            const issue = context.payload.issue;
+            const sender = context.payload.sender;
+
+            // 1. Guard: Ensure this is a comment on an issue, not a pull request
+            if (!issue || issue.pull_request) {
+              console.log("Not an issue comment (or comment is on a pull request). Skipping.");
+              return;
+            }
+
+            // 2. Guard: Ignore bot users
+            if ((comment.user && comment.user.type === 'Bot') || (sender && sender.type === 'Bot')) {
+              console.log("Commenter is a bot user. Skipping.");
+              return;
+            }
+
+            const commenter = comment.user ? comment.user.login : (sender ? sender.login : '');
+            if (!commenter) {
+              console.log("Could not identify commenter username. Skipping.");
+              return;
+            }
+
+            // 3. Match claim comment phrase with normalization
+            function isClaimComment(commentBody) {
+              if (!commentBody || typeof commentBody !== 'string') return false;
+
+              const normalized = commentBody
+                .trim()
+                .toLowerCase()
+                .replace(/[\u2018\u2019\u201B']/g, "'")
+                .replace(/\s+/g, ' ');
+
+              const canonicalWithEmoji = "hi! i'd like to work on this issue. thank you! 🙌";
+              const canonicalNoEmoji = "hi! i'd like to work on this issue. thank you!";
+
+              return normalized === canonicalWithEmoji || normalized === canonicalNoEmoji;
+            }
+
+            if (!isClaimComment(comment.body)) {
+              console.log("Comment body does not match the canonical claim phrase. Skipping.");
+              return;
+            }
+
+            console.log(`Valid claim phrase detected from @${commenter} on issue #${issue.number}.`);
+
+            // 4. Guard: Ensure target issue is a valid Growing Worlds contribution issue
+            const issueTitle = issue.title || '';
+            const labels = issue.labels ? issue.labels.map(l => typeof l === 'string' ? l : l.name) : [];
+            const body = issue.body || '';
+
+            const hasGoodFirstIssue = labels.includes("good first issue");
+            const hasContributionTitle = issueTitle.includes("[Good First Issue]") || issueTitle.includes("[CONTRIB-SLOT");
+            const hasWorldFields = body.includes("Target World") && (body.includes("Contribution Slot") || body.includes("Assigned World Segment"));
+
+            const isContributionIssue = hasGoodFirstIssue || hasContributionTitle || hasWorldFields;
+
+            if (!isContributionIssue) {
+              console.log(`Issue #${issue.number} is not a Growing Worlds contribution issue. Skipping.`);
+              return;
+            }
+
+            // 5. Atomic Race-Condition Protection: Fetch CURRENT real-time issue state from GitHub API
+            console.log(`Fetching current, fresh state for issue #${issue.number}...`);
+            const freshIssueRes = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+            });
+
+            const freshIssue = freshIssueRes.data;
+
+            // Check if issue is closed
+            if (freshIssue.state !== 'open') {
+              console.log(`Issue #${issue.number} is closed (${freshIssue.state}). Cannot claim.`);
+              return;
+            }
+
+            // Check current assignments
+            const existingAssignees = freshIssue.assignees && freshIssue.assignees.length > 0
+              ? freshIssue.assignees.map(a => a.login)
+              : (freshIssue.assignee ? [freshIssue.assignee.login] : []);
+
+            // 6. Case A: Issue is already assigned
+            if (existingAssignees.length > 0) {
+              const currentAssignee = existingAssignees[0];
+
+              // If already assigned to this commenter, no need to reject or re-assign
+              if (existingAssignees.includes(commenter)) {
+                console.log(`Issue #${issue.number} is already assigned to @${commenter}. Nothing to do.`);
+                return;
+              }
+
+              console.log(`Issue #${issue.number} is already assigned to @${currentAssignee}. Rejecting claim by @${commenter}.`);
+
+              const rejectionMarker = `<!-- growing-worlds:claim-rejected:${issue.number}:${commenter} -->`;
+
+              // Check existing comments to avoid duplicate rejection comments
+              const commentsRes = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+              });
+
+              const alreadyRejected = commentsRes.data.some(c => c.body && c.body.includes(rejectionMarker));
+
+              if (alreadyRejected) {
+                console.log(`Rejection notice already posted for @${commenter} on issue #${issue.number}. Skipping duplicate.`);
+                return;
+              }
+
+              const rejectionBody = `${rejectionMarker}
+Hi @${commenter}! 👋
+
+This contribution slot is currently assigned to **@${currentAssignee}**.
+
+Please choose another unassigned contribution slot. 🌿`;
+
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: rejectionBody,
+              });
+
+              console.log(`Rejection comment posted for @${commenter} on issue #${issue.number}.`);
+              return;
+            }
+
+            // 7. Case B: Issue is unassigned -> Assign the commenter
+            console.log(`Issue #${issue.number} is unassigned. Assigning to @${commenter}...`);
+
+            await github.rest.issues.addAssignees({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              assignees: [commenter],
+            });
+
+            console.log(`✅ Successfully assigned @${commenter} to issue #${issue.number}.`);
+            console.log("GitHub will now trigger the 'issues: [assigned]' event to run the onboarding flow.");
