@@ -70,4 +70,12 @@ export const forestPlacements: ObjectPlacement[] = [
     scale: 2.0,
     rotation: 0,
   },
+  {
+  objectId: "mountain-bird-rashmi",
+  segmentId: "forest-05",
+  x: 45.0,
+  y: 55.0,
+  scale: 1.0,
+  rotation: 0,
+},
 ];
