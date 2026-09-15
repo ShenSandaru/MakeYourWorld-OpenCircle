@@ -78,4 +78,14 @@ export const forestObjects: WorldObject[] = [
       githubUsername: "sewmini12",
     },
   },
+  {
+  id: "mountain-bird-rashmi", // e.g. "mountain-bird-alex" (lowercase kebab-case),
+  asset: "/assets/worlds/growing-forest/song-bird.svg",
+  contributor: {
+    displayName: "Rashmi",
+    githubUsername: "shara-kmrn",
+  },
+}
+
+
 ];
