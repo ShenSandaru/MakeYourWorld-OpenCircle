@@ -70,7 +70,7 @@ export const forestObjects: WorldObject[] = [
       githubUsername: "sewmini12",
     },
   },
-    {
+  {
     id: "river-woodland-flower-sadali",
     asset: "/assets/worlds/growing-forest/woodland-flower.svg",
     contributor: {
@@ -80,13 +80,22 @@ export const forestObjects: WorldObject[] = [
   },
 
   {
-  id: "crest-evergreen-akeel", // e.g. "crest-evergreen-alex" (lowercase kebab-case),
-  asset: "/assets/worlds/growing-forest/pine-tree.svg",
-  contributor: {
-    displayName: "Akeel Rishan",
-    githubUsername: "Akeel-Rishan",
+    id: "crest-evergreen-akeel",
+    asset: "/assets/worlds/growing-forest/pine-tree.svg",
+    contributor: {
+      displayName: "Akeel Rishan",
+      githubUsername: "Akeel-Rishan",
+    },
   },
-},
+
+  {
+    id: "twilight-deer-dilshana",
+    asset: "/assets/worlds/growing-forest/forest-deer.svg",
+    contributor: {
+      displayName: "Dilshana",
+      githubUsername: "Dilshana-dev",
+    },
+  },
 ];
 
 
