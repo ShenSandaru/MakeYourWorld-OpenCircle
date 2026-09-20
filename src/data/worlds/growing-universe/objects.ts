@@ -22,11 +22,11 @@ export const universeObjects: WorldObject[] = [
     },
   },
   {
-    id: "paper-satellite",
+    id: "paper-satellite-Dulsi",
     asset: "/assets/worlds/growing-universe/paper-satellite.svg",
     contributor: {
-      displayName: "Anjana Jayamaha",
-      githubUsername: "AnjanaJayamaha",
+      displayName: "Dulsi Poorma",
+      githubUsername: "dulsipoorma",
     },
   },
 ];
