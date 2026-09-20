@@ -30,7 +30,7 @@ export const universeObjects: WorldObject[] = [
     },
   },
   {
-    id: "paper-satellite-Dulsi",
+    id: "paper-satellite-dulsi",
     asset: "/assets/worlds/growing-universe/paper-satellite.svg",
     contributor: {
       displayName: "Dulsi Poorma",
