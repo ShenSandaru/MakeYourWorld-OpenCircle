@@ -29,4 +29,12 @@ export const universeObjects: WorldObject[] = [
       githubUsername: "AnjanaJayamaha",
     },
   },
+  {
+    id: "paper-satellite-dulsi",
+    asset: "/assets/worlds/growing-universe/paper-satellite.svg",
+    contributor: {
+      displayName: "Dulsi Poorma",
+      githubUsername: "dulsipoorma",
+    },
+  },
 ];
