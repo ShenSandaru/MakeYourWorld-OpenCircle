@@ -86,7 +86,7 @@ export const forestPlacements: ObjectPlacement[] = [
     scale: 1.0,
     rotation: 0,
   },
-    {
+  {
     objectId: "butterfly-rjkl003cr",
     segmentId: "forest-01",
     x: 75.0,
