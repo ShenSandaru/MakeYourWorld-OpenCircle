@@ -105,6 +105,14 @@ export const forestObjects: WorldObject[] = [
       githubUsername: "Rjkl003CR",
     },
   },
+  {
+    id: "mossy-rock-sandavi",
+    asset: "/assets/worlds/growing-forest/mossy-rock.svg",
+    contributor: {
+      displayName: "Sandavi",
+      githubUsername: "Sandavi44",
+    },
+  },
 ];
 
 
