@@ -101,4 +101,12 @@ export const universePlacements: ObjectPlacement[] = [
     scale: 0.9,
     rotation: 12,
   },
+  {
+    objectId: "paper-comet-dk5488",
+    segmentId: "universe-03",
+    x: 45.0,
+    y: 55.0,
+    scale: 1.0,
+    rotation: 0,
+  },
 ];
