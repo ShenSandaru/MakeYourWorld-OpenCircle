@@ -37,4 +37,12 @@ export const universeObjects: WorldObject[] = [
       githubUsername: "dulsipoorma",
     },
   },
+  {
+    id: "paper-comet-dk5488",
+    asset: "/assets/worlds/growing-universe/paper-comet.svg",
+    contributor: {
+      displayName: "Divy Pandey",
+      githubUsername: "dk5488",
+    },
+  },
 ];
